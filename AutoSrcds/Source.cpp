@@ -2,11 +2,13 @@
 #include < nlohmann/json.hpp >
 
 #include < vector >
+#include < string_view >
 #include < string >
 #include < algorithm >
 #include < iostream >
 #include < fstream >
 #include < random >
+#include < experimental/string >
 
 #include < winsock2.h >
 #include < winsock.h >
@@ -60,6 +62,46 @@ static bool __forceinline slfPrcRunningAlready ( void ) noexcept
     }
 
     return { };
+}
+
+static ::std::wstring __forceinline truncPathToAddFileName ( ::std::wstring Path ) noexcept
+{
+    static const ::std::wstring Itm { L"\\/", };
+
+    static ::std::size_t Pos { };
+
+    if ( Path.empty ( ) || Path.ends_with ( Itm [ 0I8 ] ) || Path.ends_with ( Itm [ 1I8 ] ) )
+    {
+        return Path;
+    }
+
+    if ( ( Pos = Path.find_last_of ( Itm [ 0I8 ] ) ) != ::std::wstring::npos ||
+         ( Pos = Path.find_last_of ( Itm [ 1I8 ] ) ) != ::std::wstring::npos )
+    {
+        Path.erase ( Pos + 1I8 );
+    }
+
+    return Path;
+}
+
+static ::std::string __forceinline truncPathToAddFileName ( ::std::string Path ) noexcept
+{
+    static const ::std::string Itm { "\\/", };
+
+    static ::std::size_t Pos { };
+
+    if ( Path.empty ( ) || Path.ends_with ( Itm [ 0I8 ] ) || Path.ends_with ( Itm [ 1I8 ] ) )
+    {
+        return Path;
+    }
+
+    if ( ( Pos = Path.find_last_of ( Itm [ 0I8 ] ) ) != ::std::string::npos ||
+         ( Pos = Path.find_last_of ( Itm [ 1I8 ] ) ) != ::std::string::npos )
+    {
+        Path.erase ( Pos + 1I8 );
+    }
+
+    return Path;
 }
 
 static ::std::wstring __forceinline toUcd ( ::std::string Str ) noexcept
@@ -395,6 +437,12 @@ int __cdecl wmain ( int, wchar_t **, wchar_t ** ) noexcept
         ::GetModuleFileNameW ( { }, Buffer, ( ( sizeof ( Buffer ) / sizeof ( wchar_t ) ) - 1I8 ) );
     }
 
+    ::std::wstring buffStr { };
+
+    {
+        buffStr = ::truncPathToAddFileName ( Buffer );
+    }
+
     ::HKEY__ * pKey { };
 
     {
@@ -424,7 +472,7 @@ int __cdecl wmain ( int, wchar_t **, wchar_t ** ) noexcept
     ::std::ifstream File { };
 
     {
-        File.open ( L"CFG.INI", 1I8, 64I8 );
+        File.open ( buffStr + L"CFG.INI", 1I8, 64I8 );
 
         if ( !File.is_open ( ) )
         {
