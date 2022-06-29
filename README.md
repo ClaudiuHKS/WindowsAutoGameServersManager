@@ -1,6 +1,6 @@
 # Windows Auto Game Servers Manager
 
-Auto Start Up Your Game Servers If They Don't Already Run
+Auto Start Up Your Game Servers If They Don't Already Run And Auto Update Them
 
 **Running One Game**
 
