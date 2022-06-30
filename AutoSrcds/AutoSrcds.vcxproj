@@ -38,6 +38,8 @@
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
+    <PreferredToolArchitecture>x86</PreferredToolArchitecture>
+    <EnableFuzzer>false</EnableFuzzer>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -51,6 +53,8 @@
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+    <EnableFuzzer>false</EnableFuzzer>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -70,6 +74,12 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <GenerateManifest>false</GenerateManifest>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <GenerateManifest>false</GenerateManifest>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -93,21 +103,37 @@
       <WarningLevel>Level3</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <SDLCheck>true</SDLCheck>
+      <SDLCheck>false</SDLCheck>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NOMINMAX;_WINSOCK_DEPRECATED_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
+      <ConformanceMode>false</ConformanceMode>
       <AdditionalIncludeDirectories>$(JSON)\single_include</AdditionalIncludeDirectories>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <StringPooling>true</StringPooling>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <ErrorReporting>None</ErrorReporting>
+      <ControlFlowGuard>false</ControlFlowGuard>
+      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
+      <DebugInformationFormat>None</DebugInformationFormat>
+      <UseStandardPreprocessor>false</UseStandardPreprocessor>
+      <ExceptionHandling>false</ExceptionHandling>
+      <CallingConvention>VectorCall</CallingConvention>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <EnableModules>true</EnableModules>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
       <AdditionalDependencies>wbemuuid.lib;ws2_32.lib;wsock32.lib;mswsock.lib;urlmon.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
       <LargeAddressAware>true</LargeAddressAware>
+      <AssemblyDebug>false</AssemblyDebug>
+      <LinkErrorReporting>NoErrorReport</LinkErrorReporting>
+      <CLRSupportLastError>Disabled</CLRSupportLastError>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -133,21 +159,37 @@
       <WarningLevel>Level3</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <SDLCheck>true</SDLCheck>
+      <SDLCheck>false</SDLCheck>
       <PreprocessorDefinitions>NOMINMAX;_WINSOCK_DEPRECATED_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
+      <ConformanceMode>false</ConformanceMode>
       <AdditionalIncludeDirectories>$(JSON)\single_include</AdditionalIncludeDirectories>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <CallingConvention>VectorCall</CallingConvention>
+      <DebugInformationFormat>None</DebugInformationFormat>
+      <UseStandardPreprocessor>false</UseStandardPreprocessor>
+      <ErrorReporting>None</ErrorReporting>
+      <StringPooling>true</StringPooling>
+      <ExceptionHandling>false</ExceptionHandling>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <ControlFlowGuard>false</ControlFlowGuard>
+      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <EnableModules>true</EnableModules>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
       <AdditionalDependencies>ws2_32.lib;wsock32.lib;mswsock.lib;wbemuuid.lib;urlmon.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
       <LargeAddressAware>true</LargeAddressAware>
+      <AssemblyDebug>false</AssemblyDebug>
+      <LinkErrorReporting>NoErrorReport</LinkErrorReporting>
+      <CLRSupportLastError>Disabled</CLRSupportLastError>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
