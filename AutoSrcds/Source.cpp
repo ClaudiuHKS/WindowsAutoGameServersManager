@@ -8,143 +8,6 @@
 #include < psapi.h >
 #include < wbemidl.h >
 
-static ::std::wstring __forceinline toLwr ( ::std::wstring Str ) noexcept // unicode string to lower
-{
-    ::std::transform ( Str.begin ( ), Str.end ( ), Str.begin ( ), ::towlower );
-    return Str;
-}
-
-static unsigned long __forceinline slfPrcRun ( void ) noexcept // self proc already running, same path, same name, insensitive
-{
-    static unsigned long Prcs [ 4096I16 ] { }, Rs { }, Slf { }, It { };
-    static wchar_t slfNme [ 4096I16 ] { }, othNme [ 4096I16 ] { };
-    static void * pPrc { }, * pCur { };
-
-    if ( !( pCur = ::GetCurrentProcess ( ) ) || !::K32GetModuleFileNameExW ( pCur, { }, slfNme, ( ( sizeof ( slfNme ) / sizeof ( wchar_t ) ) - 1I8 ) ) ||
-         !::K32EnumProcesses ( Prcs, ( sizeof ( Prcs ) ), &Rs ) || !( Slf = ::GetCurrentProcessId ( ) ) )
-        return { };
-
-    for ( It = { }; It < ( Rs / ( sizeof ( unsigned long ) ) ); It++ )
-    {
-        if ( ( Prcs [ It ] ) && ( Prcs [ It ] != Slf ) && ( pPrc = ::OpenProcess ( 2097151UL, { }, Prcs [ It ] ) ) )
-        {
-            ::K32GetModuleFileNameExW ( pPrc, { }, othNme, ( ( sizeof ( othNme ) / sizeof ( wchar_t ) ) - 1I8 ) );
-            ::CloseHandle ( pPrc );
-            pPrc = { };
-
-            if ( !::lstrcmpiW ( othNme, slfNme ) )
-                return Prcs [ It ];
-        }
-    }
-
-    return { };
-}
-
-static unsigned long __forceinline prcRun ( ::std::wstring prcNm ) noexcept // a proc is running right now, part of name, insensitive
-{
-    static unsigned long Prcs [ 4096I16 ] { }, Rs { }, Slf { }, It { };
-    static wchar_t Nm [ 4096I16 ] { };
-    static void * pPrc { };
-
-    if ( !::K32EnumProcesses ( Prcs, ( sizeof ( Prcs ) ), &Rs ) || !( Slf = ::GetCurrentProcessId ( ) ) )
-        return { };
-
-    for ( It = { }; It < ( Rs / ( sizeof ( unsigned long ) ) ); It++ )
-    {
-        if ( ( Prcs [ It ] ) && ( Prcs [ It ] != Slf ) && ( pPrc = ::OpenProcess ( 2097151UL, { }, Prcs [ It ] ) ) )
-        {
-            ::K32GetModuleFileNameExW ( pPrc, { }, Nm, ( ( sizeof ( Nm ) / sizeof ( wchar_t ) ) - 1I8 ) );
-            ::CloseHandle ( pPrc );
-            pPrc = { };
-
-            if ( ::wcsstr ( ::toLwr ( Nm ).c_str ( ), ::toLwr ( prcNm ).c_str ( ) ) )
-                return Prcs [ It ];
-        }
-    }
-
-    return { };
-}
-
-static ::std::wstring __forceinline trncPth ( ::std::wstring Path ) noexcept // convert "e:/steamcmd/any.exe" to "e:/steamcmd/"
-{
-    static const ::std::wstring Itm { L"\\/", };
-
-    static ::std::size_t Pos { };
-
-    if ( Path.empty ( ) || Path.ends_with ( Itm [ 0I8 ] ) || Path.ends_with ( Itm [ 1I8 ] ) )
-        return Path;
-
-    if ( ( Pos = Path.find_last_of ( Itm [ 0I8 ] ) ) != ::std::wstring::npos || ( Pos = Path.find_last_of ( Itm [ 1I8 ] ) ) != ::std::wstring::npos )
-        Path.erase ( Pos + 1I8 );
-
-    return Path;
-}
-
-static ::std::wstring __forceinline toUcd ( ::std::string Str ) noexcept // multibyte json string to unicode
-{
-    static wchar_t Data [ 8192I16 ] { };
-    ::MultiByteToWideChar ( 65001UI16, { }, Str.c_str ( ), -1I8, Data, ( ( sizeof ( Data ) / sizeof ( wchar_t ) ) - 1I8 ) );
-
-    return Data;
-}
-
-static ::std::wstring __forceinline stmExe ( void ) noexcept // get steam app exe file path
-{
-    static ::HKEY__ * pKey { };
-    static wchar_t Str [ 4096I16 ] { };
-    static unsigned long Sz { };
-
-    if ( !::RegOpenKeyExW ( ( ( ::HKEY__ * ) ( 2147483649ULL ) ), L"SOFTWARE\\Valve\\Steam", { }, 983103UL, &pKey ) && pKey )
-    {
-        ::std::memset ( Str, { }, ( sizeof ( Str ) ) );
-        Sz = ( ( ( sizeof ( Str ) ) / ( sizeof ( wchar_t ) ) ) - 1UI8 );
-        ::RegQueryValueExW ( pKey, L"SteamExe", { }, { }, ( ( unsigned char * ) ( Str ) ), &Sz );
-        ::RegCloseKey ( pKey );
-        pKey = { };
-
-        if ( ::std::wcslen ( Str ) )
-            return Str;
-    }
-
-    return { };
-}
-
-static ::std::wstring __forceinline rmAll ( ::std::wstring Str, ::std::wstring Rm ) noexcept // remove all in string, sensitive
-{
-    static const ::std::wstring _ { };
-
-    static ::std::size_t Ps { }, rmLn { };
-
-    if ( Str.empty ( ) || Rm.empty ( ) )
-        return Str;
-
-    rmLn = Rm.length ( );
-
-    while ( ( Ps = Str.find ( Rm, Ps ) ) != ::std::wstring::npos )
-        Str.replace ( Ps, rmLn, _ );
-
-    return Str;
-}
-
-static ::std::wstring __forceinline rplAll ( ::std::wstring Str, ::std::wstring Fr, ::std::wstring To ) noexcept // replace all in string, sensitive
-{
-    static ::std::size_t Ps { }, frLn { }, toLn { };
-
-    if ( Str.empty ( ) || Fr.empty ( ) || To.empty ( ) )
-        return Str;
-
-    frLn = Fr.length ( );
-    toLn = To.length ( );
-
-    while ( ( Ps = Str.find ( Fr, Ps ) ) != ::std::wstring::npos )
-    {
-        Str.replace ( Ps, frLn, To );
-        Ps += toLn;
-    }
-
-    return Str;
-}
-
 class qryPrcsData
 {
 public:
@@ -172,7 +35,7 @@ public:
 
 public:
 
-    void __forceinline constexpr freeAll ( void ) noexcept
+    void __forceinline freeAll ( void ) noexcept
     {
         if ( pLoc ) pLoc->Release ( ), pLoc = { };
         if ( pSvc ) pSvc->Release ( ), pSvc = { };
@@ -183,9 +46,9 @@ public:
         if ( pQry ) ::SysFreeString ( pQry ), pQry = { };
         if ( pSrv ) ::SysFreeString ( pSrv ), pSrv = { };
 
-        Prc = { };
-        Prm = { };
-        Pth = { };
+        ::VariantClear ( &Prc ), Prc = { };
+        ::VariantClear ( &Prm ), Prm = { };
+        ::VariantClear ( &Pth ), Pth = { };
     }
 
 public:
@@ -204,6 +67,134 @@ public:
     ::tagVARIANT Pth { };
 };
 
+static ::std::wstring __forceinline toLwr ( ::std::wstring Str ) noexcept // unicode string to lower
+{
+    ::std::transform ( Str.begin ( ), Str.end ( ), Str.begin ( ), ::towlower );
+    return Str;
+}
+
+static unsigned long __forceinline slfPrcRun ( void ) noexcept // self proc already running, same path, same name, insensitive
+{
+    static unsigned long Prcs [ 4096I16 ] { }, Rs { }, Slf { }, It { };
+    static wchar_t slfNme [ 4096I16 ] { }, othNme [ 4096I16 ] { };
+    static void * pPrc { }, * pCur { };
+
+    if ( !( pCur = ::GetCurrentProcess ( ) ) || !::K32GetModuleFileNameExW ( pCur, { }, slfNme, ( ( ( sizeof ( slfNme ) ) / ( sizeof ( wchar_t ) ) ) - 1I8 ) ) ||
+         !::K32EnumProcesses ( Prcs, ( sizeof ( Prcs ) ), &Rs ) || !( Slf = ::GetCurrentProcessId ( ) ) )
+        return { };
+
+    for ( It = { }; It < ( ( Rs ) / ( sizeof ( unsigned long ) ) ); It++ )
+    {
+        if ( ( Prcs [ It ] ) && ( Prcs [ It ] != Slf ) && ( pPrc = ::OpenProcess ( 2097151UL, { }, Prcs [ It ] ) ) )
+        {
+            ::K32GetModuleFileNameExW ( pPrc, { }, othNme, ( ( ( sizeof ( othNme ) ) / ( sizeof ( wchar_t ) ) ) - 1I8 ) );
+            ::CloseHandle ( pPrc );
+            pPrc = { };
+
+            if ( !::lstrcmpiW ( othNme, slfNme ) )
+                return Prcs [ It ];
+        }
+    }
+
+    return { };
+}
+
+static unsigned long __forceinline prcRun ( ::std::wstring prcNm ) noexcept // a proc is running right now, part of name, insensitive
+{
+    static unsigned long Prcs [ 4096I16 ] { }, Rs { }, Slf { }, It { };
+    static wchar_t Nm [ 4096I16 ] { };
+    static void * pPrc { };
+
+    if ( !::K32EnumProcesses ( Prcs, ( sizeof ( Prcs ) ), &Rs ) || !( Slf = ::GetCurrentProcessId ( ) ) )
+        return { };
+
+    for ( It = { }; It < ( ( Rs ) / ( sizeof ( unsigned long ) ) ); It++ )
+    {
+        if ( ( Prcs [ It ] ) && ( Prcs [ It ] != Slf ) && ( pPrc = ::OpenProcess ( 2097151UL, { }, Prcs [ It ] ) ) )
+        {
+            ::K32GetModuleFileNameExW ( pPrc, { }, Nm, ( ( ( sizeof ( Nm ) ) / ( sizeof ( wchar_t ) ) ) - 1I8 ) );
+            ::CloseHandle ( pPrc );
+            pPrc = { };
+
+            if ( ::std::wcsstr ( ::toLwr ( Nm ).c_str ( ), ::toLwr ( prcNm ).c_str ( ) ) )
+                return Prcs [ It ];
+        }
+    }
+
+    return { };
+}
+
+static ::std::wstring __forceinline trncPth ( ::std::wstring Pth ) noexcept // convert "e:/steamcmd/any.exe" to "e:/steamcmd/"
+{
+    if ( Pth.empty ( ) || Pth.ends_with ( L'/' ) || Pth.ends_with ( L'\\' ) )
+        return Pth;
+
+    ::std::size_t Ps { };
+    if ( ( Ps = Pth.find_last_of ( L'/' ) ) != ::std::wstring::npos || ( Ps = Pth.find_last_of ( L'\\' ) ) != ::std::wstring::npos )
+        Pth.erase ( Ps + 1I8 );
+
+    return Pth;
+}
+
+static ::std::wstring __forceinline toUcd ( ::std::string Str ) noexcept // multibyte string to unicode
+{
+    static wchar_t Data [ 8192I16 ] { };
+    ::MultiByteToWideChar ( 65001UI16, { }, Str.c_str ( ), -1I8, Data, ( ( ( sizeof ( Data ) ) / ( sizeof ( wchar_t ) ) ) - 1I8 ) );
+    return Data;
+}
+
+static ::std::string __forceinline toMbc ( ::std::wstring Str ) noexcept // unicode string to multibyte
+{
+    static char Data [ 8192I16 ] { };
+    ::WideCharToMultiByte ( 65001UI16, { }, Str.c_str ( ), -1I8, Data, ( ( ( sizeof ( Data ) ) / ( sizeof ( char ) ) ) - 1I8 ), { }, { } );
+    return Data;
+}
+
+static ::std::wstring __forceinline stmExe ( void ) noexcept // get steam app exe file path
+{
+    static ::HKEY__ * pKey { };
+    static wchar_t Str [ 4096I16 ] { };
+    static unsigned long Sz { };
+
+    if ( !::RegOpenKeyExW ( ( ( ::HKEY__ * ) ( 2147483649ULL ) ), L"SOFTWARE\\Valve\\Steam", { }, 983103UL, &pKey ) && pKey )
+    {
+        ::std::memset ( Str, { }, ( sizeof ( Str ) ) );
+        Sz = ( ( ( sizeof ( Str ) ) / ( sizeof ( wchar_t ) ) ) - 1UI8 );
+        ::RegQueryValueExW ( pKey, L"SteamExe", { }, { }, ( ( unsigned char * ) ( Str ) ), &Sz );
+        ::RegCloseKey ( pKey );
+        pKey = { };
+
+        if ( ::std::wcslen ( Str ) )
+            return Str;
+    }
+
+    return { };
+}
+
+static ::std::wstring __forceinline rmAll ( ::std::wstring Str, ::std::wstring Rm ) noexcept // remove all in string, sensitive
+{
+    if ( Str.empty ( ) || Rm.empty ( ) )
+        return Str;
+
+    ::std::size_t Ps { };
+    while ( ( Ps = Str.find ( Rm ) ) != ::std::wstring::npos )
+        Str.erase ( Ps, Rm.length ( ) );
+
+    return Str;
+}
+
+static ::std::wstring __forceinline rplAll ( ::std::wstring Str, ::std::wstring Fr, ::std::wstring To ) noexcept // replace all in string, sensitive
+{
+    if ( Str.empty ( ) || Fr.empty ( ) || To.empty ( ) )
+        return Str;
+
+    ::std::size_t Ps { };
+    while ( ( Ps = Str.find ( Fr ) ) != ::std::wstring::npos )
+        Str.replace ( Ps, Fr.length ( ), To );
+
+    return Str;
+}
+
 static bool __forceinline qryPrcs ( ::std::vector < unsigned long > & Prcs, ::std::vector < ::std::wstring > & Prms, ::std::vector < ::std::wstring > & Pths ) noexcept
 {
     ::qryPrcsData Data { };
@@ -212,23 +203,18 @@ static bool __forceinline qryPrcs ( ::std::vector < unsigned long > & Prcs, ::st
     Prms.clear ( );
     Pths.clear ( );
 
-    if ( ::CoInitializeEx ( { }, { } ) ||
-         ::CoInitializeSecurity ( { }, -1L, { }, { }, { }, 3UL, { }, { }, { } ) ||
-         ::CoCreateInstance ( ::CLSID_WbemLocator, { }, 1UL, ::IID_IWbemLocator, ( void ** ) &Data.pLoc ) || !Data.pLoc ||
-         !( Data.pSrv = ::SysAllocString ( L"ROOT\\CIMV2" ) ) ||
-         Data.pLoc->ConnectServer ( Data.pSrv, { }, { }, { }, { }, { }, { }, &Data.pSvc ) ||
-         !Data.pSvc || !( Data.pLng = ::SysAllocString ( L"WQL" ) ) ||
+    if ( ::CoInitializeEx ( { }, { } ) || ::CoInitializeSecurity ( { }, -1L, { }, { }, { }, 3UL, { }, { }, { } ) ||
+         ::CoCreateInstance ( ::CLSID_WbemLocator, { }, 1UL, ::IID_IWbemLocator, ( void ** ) &Data.pLoc ) || !Data.pLoc || !( Data.pSrv = ::SysAllocString ( L"ROOT\\CIMV2" ) ) ||
+         Data.pLoc->ConnectServer ( Data.pSrv, { }, { }, { }, { }, { }, { }, &Data.pSvc ) || !Data.pSvc || !( Data.pLng = ::SysAllocString ( L"WQL" ) ) ||
          !( Data.pQry = ::SysAllocString ( L"SELECT ProcessId, CommandLine, ExecutablePath FROM Win32_Process" ) ) ||
          Data.pSvc->ExecQuery ( Data.pLng, Data.pQry, { }, { }, &Data.pEnm ) || !Data.pEnm )
     {
         Data.freeAll ( );
         ::CoUninitialize ( );
-
         return { };
     }
 
     unsigned long _ { };
-
     while ( !Data.pEnm->Next ( -1L, 1UL, &Data.pObj, &_ ) )
     {
         if ( Data.pObj )
@@ -253,16 +239,12 @@ static bool __forceinline qryPrcs ( ::std::vector < unsigned long > & Prcs, ::st
 
     Data.freeAll ( );
     ::CoUninitialize ( );
-
     return true;
 }
 
 static unsigned long __forceinline prcByNme ( ::std::wstring Nm, const ::std::vector < ::std::wstring > & Pths, const ::std::vector < unsigned long > & Prcs ) noexcept
 { // a proc by this part of name was running at some point, insensitive
-    static ::std::size_t It { };
-
-    It = { };
-
+    ::std::size_t It { };
     for ( const auto & Pth : Pths )
     {
         if ( ++It && ::std::wcsstr ( ::toLwr ( Pth ).c_str ( ), ::toLwr ( Nm ).c_str ( ) ) )
@@ -274,11 +256,7 @@ static unsigned long __forceinline prcByNme ( ::std::wstring Nm, const ::std::ve
 
 static bool __forceinline allSvRun ( const ::nlohmann::json & Cfg, const ::std::vector < ::std::wstring > & Args ) noexcept // all game servers running
 {
-    static ::std::size_t Sv { }, Rn { };
-
-    Sv = { };
-    Rn = { };
-
+    unsigned long long Sv { }, Rn { };
     for ( const auto & Srv : Cfg [ "Srvs" ] )
     {
         if ( Srv.size ( ) < 3UI8 ||
@@ -292,8 +270,8 @@ static bool __forceinline allSvRun ( const ::nlohmann::json & Cfg, const ::std::
 
         for ( const auto & Arg : Args )
         {
-            if ( ::wcsstr ( ::rmAll ( ::toLwr ( ::rplAll ( Arg, L"  ", L" " ) ), L"\"" ).c_str ( ),
-                            ::rmAll ( ::toLwr ( ::rplAll ( ::toUcd ( Srv [ "Args" ].get < ::std::string > ( ) ), L"  ", L" " ) ), L"\"" ).c_str ( ) ) )
+            if ( ::std::wcsstr ( ::rmAll ( ::toLwr ( ::rplAll ( Arg, L"  ", L" " ) ), L"\"" ).c_str ( ),
+                                 ::rmAll ( ::toLwr ( ::rplAll ( ::toUcd ( Srv [ "Args" ].get < ::std::string > ( ) ), L"  ", L" " ) ), L"\"" ).c_str ( ) ) )
                 Rn++;
         }
     }
@@ -303,8 +281,8 @@ static bool __forceinline allSvRun ( const ::nlohmann::json & Cfg, const ::std::
 
 static void __forceinline killAllSv ( const ::nlohmann::json & Cfg, const ::std::vector < ::std::wstring > & Args, const ::std::vector < unsigned long > & Prcs ) noexcept
 {
-    static ::std::time_t Tme { };
-    static ::std::size_t prIt { }, agIt { };
+    static long long Tme { };
+    static unsigned long long prIt { }, agIt { };
     static void * pPr { };
 
     for ( const auto & Srv : Cfg [ "Srvs" ] )
@@ -321,8 +299,8 @@ static void __forceinline killAllSv ( const ::nlohmann::json & Cfg, const ::std:
 
         for ( const auto & Arg : Args )
         {
-            if ( ++agIt && ::wcsstr ( ::rmAll ( ::toLwr ( ::rplAll ( Arg, L"  ", L" " ) ), L"\"" ).c_str ( ),
-                                      ::rmAll ( ::toLwr ( ::rplAll ( ::toUcd ( Srv [ "Args" ].get < ::std::string > ( ) ), L"  ", L" " ) ), L"\"" ).c_str ( ) ) )
+            if ( ++agIt && ::std::wcsstr ( ::rmAll ( ::toLwr ( ::rplAll ( Arg, L"  ", L" " ) ), L"\"" ).c_str ( ),
+                                           ::rmAll ( ::toLwr ( ::rplAll ( ::toUcd ( Srv [ "Args" ].get < ::std::string > ( ) ), L"  ", L" " ) ), L"\"" ).c_str ( ) ) )
             {
                 for ( const auto & Prc : Prcs )
                 {
@@ -342,6 +320,122 @@ static void __forceinline killAllSv ( const ::nlohmann::json & Cfg, const ::std:
     }
 }
 
+static ::std::vector < unsigned char > __forceinline rdUpFl ( ::std::string Sv, unsigned short Pr, ::std::string Vs, ::std::string Ph, long long To ) noexcept
+{ // gets online multibyte file by server, port, http version, path and timeout in seconds
+    static ::std::vector < unsigned char > Dv { }; // data vector
+    static ::std::size_t Sk { }; // socket
+    static ::hostent * pSh { }; // server handle
+    static char Db [ 4096UI16 ] { }; // data buffer
+    static int Rs { }, It { }; // result, iterator
+    static ::timeval Tv { };
+    static ::fd_set Fd { };
+    static long long Ts { }; // timestamp, seconds
+
+    Dv.clear ( );
+    Dv = { };
+    if ( !( pSh = ::gethostbyname ( Sv.c_str ( ) ) ) )
+        return Dv;
+
+    ::sockaddr_in Sa { }; // socket address
+    Sk = ::socket ( 2I8, 1I8, 6I8 );
+    Sa.sin_family = 2I8;
+    ::std::memcpy ( &Sa.sin_addr, pSh->h_addr_list [ 0I8 ], pSh->h_length );
+    Sa.sin_port = ::htons ( Pr );
+    Rs = ::connect ( Sk, ( ( ::sockaddr * ) ( &Sa ) ), ( sizeof ( Sa ) ) );
+    if ( Rs == -1I8 )
+    {
+        ::closesocket ( Sk );
+        return Dv;
+    }
+
+    Rs = ::std::snprintf ( Db, ( ( ( sizeof ( Db ) ) / ( sizeof ( char ) ) ) - 1I8 ), "GET %s HTTP/%s\r\nHost: %s\r\n\r\n", Ph.c_str ( ), Vs.c_str ( ), Sv.c_str ( ) );
+    Rs = ::send ( Sk, Db, Rs, { } );
+    if ( Rs == -1I8 )
+    {
+        ::closesocket ( Sk );
+        return Dv;
+    }
+
+    Ts = ::std::time ( { } );
+    while ( true )
+    {
+        ::Sleep ( 1UI8 );
+        Tv.tv_sec = { };
+        Tv.tv_usec = 25I8;
+        ::std::memset ( &Fd, { }, ( sizeof ( Fd ) ) );
+        ( &Fd )->fd_count = 1I8;
+        ( &Fd )->fd_array [ 0I8 ] = Sk;
+
+        if ( ( ( ::select ( ( ( int ) ( Sk + 1UI8 ) ), &Fd, { }, { }, &Tv ) ) > 0I8 ) || ( ( ::std::time ( { } ) - Ts ) > To ) )
+            break;
+    }
+
+    while ( ( ( Rs = ::recv ( Sk, Db, ( ( ( sizeof ( Db ) ) / ( sizeof ( char ) ) ) - 1I8 ), { } ) ) > 0I8 ) )
+    {
+        for ( It = { }; It < Rs; It++ )
+            Dv.emplace_back ( ( ( unsigned char ) ( Db [ It ] ) ) );
+    }
+
+    ::closesocket ( Sk );
+    return Dv;
+}
+
+static ::std::wstring __forceinline rdVs ( const ::nlohmann::json & Cfg ) noexcept // read actual version from steam.inf
+{
+    if ( Cfg [ "UpdateKeyFile" ].is_discarded ( ) || Cfg [ "UpdateKeyFile" ].empty ( ) || !Cfg [ "UpdateKeyFile" ].is_string ( ) ||
+         Cfg [ "UpdateKeyFile" ].get < ::std::string > ( ).empty ( ) || !::std::filesystem::exists ( ::toUcd ( Cfg [ "UpdateKeyFile" ].get < ::std::string > ( ) ) ) )
+        return { };
+
+    ::std::wifstream Fl { };
+    Fl.open ( ::toUcd ( Cfg [ "UpdateKeyFile" ].get < ::std::string > ( ) ), 1I8, 64I8 );
+    if ( !Fl.is_open ( ) )
+    {
+        Fl.clear ( );
+        return { };
+    }
+
+    ::std::wstring Ln { }, Vs { };
+    while ( ::std::getline ( Fl, Ln ) )
+    {
+        if ( ::std::wcsstr ( ::rmAll ( ::rmAll ( ::rmAll ( ::rmAll ( ::rmAll ( ::rmAll ( ::rmAll ( ::rplAll ( ::toLwr (
+            Ln ), L"  ", L" " ), L"\"" ), L"\t" ), L"\n" ), L"\r" ), L"\v" ), L"\f" ), L" " ).c_str ( ), L"patchversion=" ) )
+            Vs = ::rmAll ( ::rmAll ( ::rmAll ( ::rmAll ( ::rmAll ( ::rmAll ( ::rmAll ( ::rmAll ( ::rplAll ( ::toLwr (
+                Ln ), L"  ", L" " ), L"\"" ), L"\t" ), L"\n" ), L"\r" ), L"\v" ), L"\f" ), L" " ), L"patchversion=" );
+
+        Ln.clear ( );
+        Ln = { };
+    }
+
+    Fl.close ( );
+    Fl.clear ( );
+    return Vs;
+}
+
+static bool __forceinline needUpd ( const ::nlohmann::json & Cfg ) noexcept
+{
+    if ( Cfg [ "AppId" ].is_discarded ( ) || Cfg [ "AppId" ].empty ( ) || !Cfg [ "AppId" ].is_number_unsigned ( ) )
+        return { };
+
+    ::std::string Vrs { ::toMbc ( ::rdVs ( Cfg ) ), };
+    if ( Vrs.empty ( ) )
+        return { };
+
+    ::std::vector < unsigned char > Data { ::rdUpFl ( "hattrick.go.ro", 80UI8, "1.1",
+                                                      ( "/gameUpToDate.Php?appid=" + ( ::std::to_string ( Cfg [ "AppId" ].get < int > ( ) ) ) + "&version=" + Vrs ), 8I8 ), };
+    if ( Data.empty ( ) )
+        return { };
+
+    if ( Data.back ( ) )
+        Data.emplace_back ( 0UI8 );
+    if ( Data.back ( ) )
+        Data.push_back ( 0UI8 );
+
+    if ( !::std::strstr ( ( ( char * ) ( Data.data ( ) ) ), "up_to_date" ) )
+        return { };
+
+    return ( ( bool ) ( !::std::strstr ( ( ( char * ) ( Data.data ( ) ) ), "\"up_to_date\":true" ) ) );
+}
+
 int __cdecl wmain ( int, wchar_t **, wchar_t ** ) noexcept
 {
     ::WSAData Data { };
@@ -349,7 +443,6 @@ int __cdecl wmain ( int, wchar_t **, wchar_t ** ) noexcept
     {
         ::WSACleanup ( );
         ::std::wcout << L"WSAStartup Failed" << ::std::endl;
-
         return 1I8;
     }
 
@@ -361,7 +454,6 @@ int __cdecl wmain ( int, wchar_t **, wchar_t ** ) noexcept
     {
         ::WSACleanup ( );
         ::std::wcout << L"This Application Is Already Running" << ::std::endl;
-
         return 1I8;
     }
 
@@ -372,7 +464,7 @@ int __cdecl wmain ( int, wchar_t **, wchar_t ** ) noexcept
         ::SetConsoleTitleW ( L"Auto Gaming Servers" );
 
     wchar_t Buffer [ 4096I16 ] { };
-    ::GetModuleFileNameW ( { }, Buffer, ( ( sizeof ( Buffer ) / sizeof ( wchar_t ) ) - 1I8 ) );
+    ::GetModuleFileNameW ( { }, Buffer, ( ( ( sizeof ( Buffer ) ) / ( sizeof ( wchar_t ) ) ) - 1I8 ) );
     ::std::wstring buffStr { ::trncPth ( Buffer ), };
 
     ::HKEY__ * pKey { };
@@ -386,7 +478,6 @@ int __cdecl wmain ( int, wchar_t **, wchar_t ** ) noexcept
 
         ::WSACleanup ( );
         ::std::wcout << L"RegOpenKeyExW Failed" << ::std::endl;
-
         return 1I8;
     }
 
@@ -447,7 +538,6 @@ int __cdecl wmain ( int, wchar_t **, wchar_t ** ) noexcept
         File.clear ( );
         ::WSACleanup ( );
         ::std::wcout << L"CFG.INI Failed" << ::std::endl;
-
         return 1I8;
     }
 
@@ -460,7 +550,6 @@ int __cdecl wmain ( int, wchar_t **, wchar_t ** ) noexcept
         Cfg.clear ( );
         ::WSACleanup ( );
         ::std::wcout << L"JSON Validation Failed" << ::std::endl;
-
         return 1I8;
     }
 
@@ -488,11 +577,11 @@ int __cdecl wmain ( int, wchar_t **, wchar_t ** ) noexcept
     ::std::wstring Port { }; // game server port
     ::std::wstring Args { }; // proc params, raw
     ::std::wstring sExe { }; // steam exe file path
-    ::std::time_t Tme { }; // time
     ::tagLASTINPUTINFO lInf { }; // last user input info
     ::_STARTUPINFOW sInf { }; // proc startup info
     ::_PROCESS_INFORMATION pInf { }; // proc info
     unsigned long Prc { }; // proc id
+    long long Tme { }; // time
     void * pPrc { }; // proc hndl
     bool bRun { }; // run the game server
 
@@ -515,23 +604,22 @@ int __cdecl wmain ( int, wchar_t **, wchar_t ** ) noexcept
             // user is not away, do not disturb
         }
 
-        else if ( !Cfg [ "UpdateKeyFile" ].is_discarded ( ) && !Cfg [ "UpdateKeyFile" ].empty ( ) && Cfg [ "UpdateKeyFile" ].is_string ( ) &&
-                  !Cfg [ "UpdateKeyFile" ].get < ::std::string > ( ).empty ( ) &&
-                  ::std::filesystem::exists ( ::toUcd ( Cfg [ "UpdateKeyFile" ].get < ::std::string > ( ) ) ) &&
-                  !Cfg [ "SteamCMD" ].is_discarded ( ) && !Cfg [ "SteamCMD" ].empty ( ) && Cfg [ "SteamCMD" ].is_object ( ) &&
-                  !Cfg [ "SteamCMD" ][ "Path" ].is_discarded ( ) && !Cfg [ "SteamCMD" ][ "Path" ].empty ( ) && Cfg [ "SteamCMD" ][ "Path" ].is_string ( ) &&
-                  !Cfg [ "SteamCMD" ][ "Path" ].get < ::std::string > ( ).empty ( ) &&
-                  !Cfg [ "SteamCMD" ][ "Args" ].is_discarded ( ) && !Cfg [ "SteamCMD" ][ "Args" ].empty ( ) && Cfg [ "SteamCMD" ][ "Args" ].is_string ( ) &&
-                  !Cfg [ "SteamCMD" ][ "Args" ].get < ::std::string > ( ).empty ( ) &&
-                  ::std::filesystem::exists ( ::toUcd ( Cfg [ "SteamCMD" ][ "Path" ].get < ::std::string > ( ) ) ) ) // should update the game server
+        else if ( ( ::needUpd ( Cfg ) ) || ( !Cfg [ "UpdateMainFile" ].is_discarded ( ) && !Cfg [ "UpdateMainFile" ].empty ( ) && Cfg [ "UpdateMainFile" ].is_string ( ) &&
+                                             !Cfg [ "UpdateMainFile" ].get < ::std::string > ( ).empty ( ) &&
+                                             ::std::filesystem::exists ( ::toUcd ( Cfg [ "UpdateMainFile" ].get < ::std::string > ( ) ) ) &&
+                                             !Cfg [ "SteamCMD" ].is_discarded ( ) && !Cfg [ "SteamCMD" ].empty ( ) && Cfg [ "SteamCMD" ].is_object ( ) &&
+                                             !Cfg [ "SteamCMD" ][ "Path" ].is_discarded ( ) && !Cfg [ "SteamCMD" ][ "Path" ].empty ( ) && Cfg [ "SteamCMD" ][ "Path" ].is_string ( ) &&
+                                             !Cfg [ "SteamCMD" ][ "Path" ].get < ::std::string > ( ).empty ( ) &&
+                                             !Cfg [ "SteamCMD" ][ "Args" ].is_discarded ( ) && !Cfg [ "SteamCMD" ][ "Args" ].empty ( ) && Cfg [ "SteamCMD" ][ "Args" ].is_string ( ) &&
+                                             !Cfg [ "SteamCMD" ][ "Args" ].get < ::std::string > ( ).empty ( ) &&
+                                             ::std::filesystem::exists ( ::toUcd ( Cfg [ "SteamCMD" ][ "Path" ].get < ::std::string > ( ) ) ) ) ) // should update the game server
         {
             if ( !Cfg [ "KillSteamApp" ].is_discarded ( ) && !Cfg [ "KillSteamApp" ].empty ( ) && Cfg [ "KillSteamApp" ].is_boolean ( ) && Cfg [ "KillSteamApp" ].get < bool > ( ) )
             {
                 sExe = ::stmExe ( );
 
                 if ( !sExe.empty ( ) && ::std::filesystem::exists ( sExe ) &&
-                     ( ( Prc = ::prcByNme ( L"steam.exe", Pths, Prcs ) ) || ( Prc = ::prcRun ( L"steam.exe" ) ) ) &&
-                     ( pPrc = ::OpenProcess ( 2097151UL, { }, Prc ) ) )
+                     ( ( Prc = ::prcByNme ( L"steam.exe", Pths, Prcs ) ) || ( Prc = ::prcRun ( L"steam.exe" ) ) ) && ( pPrc = ::OpenProcess ( 2097151UL, { }, Prc ) ) )
                 {
                     ::TerminateProcess ( pPrc, 1UI8 );
                     ::WaitForSingleObject ( pPrc, 4294967295UL );
@@ -544,14 +632,14 @@ int __cdecl wmain ( int, wchar_t **, wchar_t ** ) noexcept
             } // kill steam
 
             if ( ::std::filesystem::exists ( ::toUcd ( Cfg [ "SteamCMD" ][ "Path" ].get < ::std::string > ( ) ) ) &&
-                 ::std::filesystem::exists ( ::toUcd ( Cfg [ "UpdateKeyFile" ].get < ::std::string > ( ) ) ) && !::prcRun ( L"steamcmd.exe" ) )
+                 ::std::filesystem::exists ( ::toUcd ( Cfg [ "UpdateMainFile" ].get < ::std::string > ( ) ) ) && !::prcRun ( L"steamcmd.exe" ) )
             {
                 if ( ::qryPrcs ( Prcs, Prms, Pths ) )
                 {
                     ::killAllSv ( Cfg, Prms, Prcs );
 
                     if ( ::std::filesystem::exists ( ::toUcd ( Cfg [ "SteamCMD" ][ "Path" ].get < ::std::string > ( ) ) ) &&
-                         ::std::filesystem::exists ( ::toUcd ( Cfg [ "UpdateKeyFile" ].get < ::std::string > ( ) ) ) &&
+                         ::std::filesystem::exists ( ::toUcd ( Cfg [ "UpdateMainFile" ].get < ::std::string > ( ) ) ) &&
                          !::prcByNme ( L"steamcmd.exe", Pths, Prcs ) && !::prcRun ( L"steamcmd.exe" ) )
                     {
                         ::std::memset ( &sInf, { }, ( sizeof ( sInf ) ) );
@@ -560,11 +648,10 @@ int __cdecl wmain ( int, wchar_t **, wchar_t ** ) noexcept
 
                         if ( ::CreateProcessW ( ::toUcd ( Cfg [ "SteamCMD" ][ "Path" ].get < ::std::string > ( ) ).c_str ( ),
                                                 ( ( wchar_t * ) ( ::toUcd ( Cfg [ "SteamCMD" ][ "Args" ].get < ::std::string > ( ) ).c_str ( ) ) ),
-                                                { }, { }, { }, 144UL, { }, { },
-                                                &sInf, &pInf ) && pInf.hProcess )
+                                                { }, { }, { }, 144UL, { }, { }, &sInf, &pInf ) && pInf.hProcess )
                         {
-                            if ( ::std::filesystem::exists ( ::toUcd ( Cfg [ "UpdateKeyFile" ].get < ::std::string > ( ) ) ) )
-                                ::std::filesystem::remove ( ::toUcd ( Cfg [ "UpdateKeyFile" ].get < ::std::string > ( ) ) );
+                            if ( ::std::filesystem::exists ( ::toUcd ( Cfg [ "UpdateMainFile" ].get < ::std::string > ( ) ) ) )
+                                ::std::filesystem::remove ( ::toUcd ( Cfg [ "UpdateMainFile" ].get < ::std::string > ( ) ) );
 
                             ::WaitForSingleObject ( pInf.hProcess, 4294967295UL );
                             ::CloseHandle ( pInf.hProcess );
@@ -620,8 +707,7 @@ int __cdecl wmain ( int, wchar_t **, wchar_t ** ) noexcept
                         sExe = ::stmExe ( );
 
                         if ( !sExe.empty ( ) && ::std::filesystem::exists ( sExe ) &&
-                             ( ( Prc = ::prcByNme ( L"steam.exe", Pths, Prcs ) ) || ( Prc = ::prcRun ( L"steam.exe" ) ) ) &&
-                             ( pPrc = ::OpenProcess ( 2097151UL, { }, Prc ) ) )
+                             ( ( Prc = ::prcByNme ( L"steam.exe", Pths, Prcs ) ) || ( Prc = ::prcRun ( L"steam.exe" ) ) ) && ( pPrc = ::OpenProcess ( 2097151UL, { }, Prc ) ) )
                         {
                             ::TerminateProcess ( pPrc, 1UI8 );
                             ::WaitForSingleObject ( pPrc, 4294967295UL );
@@ -639,8 +725,7 @@ int __cdecl wmain ( int, wchar_t **, wchar_t ** ) noexcept
 
                     if ( ::CreateProcessW ( ::toUcd ( Srv [ "Path" ].get < ::std::string > ( ) ).c_str ( ),
                                             ( ( wchar_t * ) ( ::toUcd ( Srv [ "Args" ].get < ::std::string > ( ) ).c_str ( ) ) ),
-                                            { }, { }, { }, 144UL, { }, { },
-                                            &sInf, &pInf ) && pInf.hProcess )
+                                            { }, { }, { }, 144UL, { }, { }, &sInf, &pInf ) && pInf.hProcess )
                     { // launch server
                         ::CloseHandle ( pInf.hProcess );
                         ::CloseHandle ( pInf.hThread );
@@ -656,17 +741,13 @@ int __cdecl wmain ( int, wchar_t **, wchar_t ** ) noexcept
                         { // if all the game servers are running try launching the steam app
                             sExe = ::stmExe ( );
 
-                            if ( !sExe.empty ( ) && ::std::filesystem::exists ( sExe ) && !( Prc = ::prcByNme ( L"steam.exe", Pths, Prcs ) ) &&
-                                 !( Prc = ::prcRun ( L"steam.exe" ) ) )
+                            if ( !sExe.empty ( ) && ::std::filesystem::exists ( sExe ) && !( Prc = ::prcByNme ( L"steam.exe", Pths, Prcs ) ) && !( Prc = ::prcRun ( L"steam.exe" ) ) )
                             {
                                 ::std::memset ( &sInf, { }, ( sizeof ( sInf ) ) );
                                 ::std::memset ( &pInf, { }, ( sizeof ( pInf ) ) );
                                 sInf.cb = ( sizeof ( sInf ) );
 
-                                if ( ::CreateProcessW ( sExe.c_str ( ),
-                                                        ( ( wchar_t * ) ( L"/high -high +high" ) ),
-                                                        { }, { }, { }, 144UL, { }, { },
-                                                        &sInf, &pInf ) && pInf.hProcess )
+                                if ( ::CreateProcessW ( sExe.c_str ( ), ( ( wchar_t * ) ( L"/high -high +high" ) ), { }, { }, { }, 144UL, { }, { }, &sInf, &pInf ) && pInf.hProcess )
                                 {
                                     ::CloseHandle ( pInf.hProcess );
                                     ::CloseHandle ( pInf.hThread );
@@ -687,6 +768,5 @@ int __cdecl wmain ( int, wchar_t **, wchar_t ** ) noexcept
 
     Cfg.clear ( );
     ::WSACleanup ( );
-
     return { };
 }
