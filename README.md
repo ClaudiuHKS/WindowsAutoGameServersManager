@@ -2,6 +2,10 @@
 
 Auto Start Up Your Game Servers If They Don't Already Run And Auto Update Them
 
+**Architecture**
+
+- Use `Release x64`. Use `Release x86` only if `Release x64` fails.
+
 **Running One Game**
 
 - You need a folder containing `AutoSrcds.exe` and `CFG.INI`.
@@ -13,7 +17,8 @@ Auto Start Up Your Game Servers If They Don't Already Run And Auto Update Them
 - Only one folder should contain `AutoSrcds.exe` and `CFG.INI`.
 - The other folders should also contain one of the following files: `0`, `1`, `2`, ...
 
-**Automatically Updating The Game Servers**
+**Details**
 
-- Your game server must create the `UpdateKeyFile` file by itself at the right time.
-- You will need a custom plugin for that.
+- Launches by itself when Windows starts up.
+- Needs https://aka.ms/vs/17/release/vc_redist.x64.exe for `Release x64`.
+- Needs https://aka.ms/vs/17/release/vc_redist.x86.exe for `Release x86`.
