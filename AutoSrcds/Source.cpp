@@ -41,7 +41,7 @@ public:
 unsigned long slfPrcRun ( void ) noexcept
 {
     static unsigned long Prcs [ 2048I16 ] { }, Rs { }, Slf { }, It { };
-    static wchar_t slfNme [ 1024I16 ] { }, othNme [ 1024I16 ] { };
+    static wchar_t slfNme [ 512I16 ] { }, othNme [ 512I16 ] { };
     static void * pPrc { }, * pCur { };
 
     if ( !( pCur = ::GetCurrentProcess ( ) ) ||
@@ -69,7 +69,7 @@ unsigned long slfPrcRun ( void ) noexcept
 unsigned long prcRun ( ::std::wstring prcNm ) noexcept
 {
     static unsigned long Prcs [ 2048I16 ] { }, Rs { }, Slf { }, It { };
-    static wchar_t Nm [ 1024I16 ] { };
+    static wchar_t Nm [ 512I16 ] { };
     static void * pPrc { };
 
     if ( !::K32EnumProcesses ( Prcs, ( sizeof ( Prcs ) ), &Rs ) || !( Slf = ::GetCurrentProcessId ( ) ) )
@@ -107,7 +107,7 @@ unsigned long prcRun ( ::std::wstring prcNm ) noexcept
 
 ::std::wstring toUcd ( ::std::string Str ) noexcept
 {
-    static wchar_t Data [ 2048I16 ] { };
+    static wchar_t Data [ 1024I16 ] { };
 
     ::MultiByteToWideChar ( 65001UI16, { }, Str.c_str ( ), -1I8, Data,
                             ( ( ( sizeof ( Data ) ) / ( sizeof ( wchar_t ) ) ) - 1I8 ) );
@@ -117,7 +117,7 @@ unsigned long prcRun ( ::std::wstring prcNm ) noexcept
 
 ::std::string toMbc ( ::std::wstring Str ) noexcept
 {
-    static char Data [ 2048I16 ] { };
+    static char Data [ 1024I16 ] { };
 
     ::WideCharToMultiByte ( 65001UI16, { }, Str.c_str ( ), -1I8, Data,
                             ( ( ( sizeof ( Data ) ) / ( sizeof ( char ) ) ) - 1I8 ), { }, { } );
@@ -128,7 +128,7 @@ unsigned long prcRun ( ::std::wstring prcNm ) noexcept
 ::std::wstring stmExe ( void ) noexcept
 {
     static ::HKEY__ * pKey { };
-    static wchar_t Str [ 1024I16 ] { };
+    static wchar_t Str [ 512I16 ] { };
     static unsigned long Sz { };
 
     if ( !::RegOpenKeyExW ( ( ( ::HKEY__ * ) ( 2147483649ULL ) ), L"SOFTWARE\\Valve\\Steam", { }, 983103UL, &pKey ) && pKey )
@@ -400,7 +400,7 @@ void killAllSv ( ::nlohmann::json & Cfg, ::std::vector < ::std::wstring > & Args
 {
     static ::std::vector < unsigned char > Dv { };
     static ::std::size_t Sk { };
-    static char Db [ 4096UI16 ] { };
+    static char Db [ 2048UI16 ] { };
     static long long Ts { };
     static int Rs { }, It { };
     static ::fd_set Fd { };
@@ -590,7 +590,7 @@ int wmain ( void ) noexcept
     if ( ::GetConsoleWindow ( ) )
         ::SetConsoleTitleW ( L"Auto Gaming Servers" );
 
-    wchar_t Buffer [ 4096I16 ] { };
+    wchar_t Buffer [ 512I16 ] { };
 
     ::GetModuleFileNameW ( { }, Buffer, ( ( ( sizeof ( Buffer ) ) / ( sizeof ( wchar_t ) ) ) - 1I8 ) );
 
@@ -740,22 +740,18 @@ int wmain ( void ) noexcept
     void * pPr { };
     bool Run { };
 
-    while ( ::gethostbyname ( "google.com" ) )
+    while ( true )
     {
         ::std::memset ( &liInf, { }, ( sizeof ( liInf ) ) );
 
         liInf.cbSize = ( sizeof ( liInf ) );
 
-        if ( ::prcByNme ( L"steamcmd.exe", Pths, Prcs ) || ::prcRun ( L"steamcmd.exe" ) )
-        {
-
-        }
-
-        else if ( ( ::GetLastInputInfo ( &liInf ) ) &&
-                  ( ( ::GetTickCount64 ( ) - liInf.dwTime ) < ( ( !Cfg [ "AwayUpdate" ].is_discarded ( ) &&
-                                                                  !Cfg [ "AwayUpdate" ].empty ( ) &&
-                                                                  Cfg [ "AwayUpdate" ].is_number_unsigned ( ) ) ?
-                                                                ( ::std::max ( Cfg [ "AwayUpdate" ].get < unsigned long > ( ), 30000UL ) ) : ( 180000UL ) ) ) )
+        if ( !( ::gethostbyname ( "google.com" ) ) || ( ::prcByNme ( L"steamcmd.exe", Pths, Prcs ) ) || ( ::prcRun ( L"steamcmd.exe" ) ) ||
+             ( ( ::GetLastInputInfo ( &liInf ) ) &&
+               ( ( ::GetTickCount64 ( ) - liInf.dwTime ) < ( ( !Cfg [ "AwayUpdate" ].is_discarded ( ) &&
+                                                               !Cfg [ "AwayUpdate" ].empty ( ) &&
+                                                               Cfg [ "AwayUpdate" ].is_number_unsigned ( ) ) ?
+                                                             ( ::std::max ( Cfg [ "AwayUpdate" ].get < unsigned long > ( ), 30000UL ) ) : ( 180000UL ) ) ) ) )
         {
 
         }
