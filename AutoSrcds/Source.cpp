@@ -1,9 +1,4 @@
 
-#pragma warning ( push )
-
-#pragma warning ( disable : 4530 )
-#pragma warning ( disable : 4007 )
-
 #include < nlohmann/json.hpp >
 
 #include < iostream >
@@ -564,7 +559,7 @@ bool ndUp ( ::nlohmann::json & _ ) noexcept
     return ( ( bool ) ( !( ::std::strstr ( ( ( char * ) ( Var.data ( ) ) ), "\"up_to_date\":true" ) ) ) );
 }
 
-int wmain ( void ) noexcept
+int __cdecl wmain ( void ) noexcept
 {
     ::WSAData _ { };
 
@@ -802,6 +797,9 @@ int wmain ( void ) noexcept
                     else
                         ::std::wcout << ::toUc ( ::std::ctime ( &Tm ) ) << L"Tried To Kill Steam APP (" << Pr << L")" << ::std::endl << ::std::endl;
                 }
+
+                else
+                    Er = { };
             }
 
             else
@@ -905,6 +903,9 @@ int wmain ( void ) noexcept
                             else
                                 ::std::wcout << ::toUc ( ::std::ctime ( &Tm ) ) << L"Tried To Kill Steam APP (" << Pr << L")" << ::std::endl << ::std::endl;
                         }
+
+                        else
+                            Er = { };
                     }
 
                     else
@@ -982,5 +983,3 @@ int wmain ( void ) noexcept
 
     return { };
 }
-
-#pragma warning ( pop )
