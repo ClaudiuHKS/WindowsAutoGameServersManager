@@ -33,6 +33,23 @@ public:
     return _;
 }
 
+::std::wstring invSl ( ::std::wstring _ ) noexcept
+{
+    if ( _.empty ( ) )
+        return _;
+
+    for ( auto & Ch : _ )
+    {
+        if ( Ch == L'\\' )
+            Ch = L'/';
+
+        else if ( Ch == L'/' )
+            Ch = L'\\';
+    }
+
+    return _;
+}
+
 unsigned long slfPrRun ( void ) noexcept
 {
     static unsigned long Pr [ 2048I16 ] { }, Rs { }, Slf { }, It { };
@@ -79,7 +96,8 @@ unsigned long prRun ( ::std::wstring _ ) noexcept
             ::CloseHandle ( pPr );
             pPr = { };
 
-            if ( ::std::wcsstr ( ::toLwr ( Nm ).c_str ( ), ::toLwr ( _ ).c_str ( ) ) )
+            if ( ::std::wcsstr ( ::toLwr ( Nm ).c_str ( ), ::toLwr ( _ ).c_str ( ) ) ||
+                 ::std::wcsstr ( ::toLwr ( Nm ).c_str ( ), ::toLwr ( ::invSl ( _ ) ).c_str ( ) ) )
                 return ( Pr [ It ] );
         }
     }
@@ -126,7 +144,7 @@ unsigned long prRun ( ::std::wstring _ ) noexcept
     static wchar_t Str [ 512I16 ] { };
     static unsigned long Sz { };
 
-    if ( !::RegOpenKeyExW ( ( ( ::HKEY__ * ) ( 2147483649ULL ) ), L"SOFTWARE\\Valve\\Steam", { }, 983103UL, &_ ) && _ )
+    if ( !::RegOpenKeyExW ( ( ( ::HKEY__ * ) ( 2147483649ULL ) ), L"software\\valve\\steam", { }, 983103UL, &_ ) && _ )
     {
         ::std::memset ( Str, { }, ( sizeof ( Str ) ) );
 
@@ -138,7 +156,7 @@ unsigned long prRun ( ::std::wstring _ ) noexcept
         _ = { };
 
         if ( ::std::wcslen ( Str ) )
-            return Str;
+            return ::toLwr ( Str );
     }
 
     else if ( _ )
@@ -165,13 +183,20 @@ unsigned long prRun ( ::std::wstring _ ) noexcept
 
 ::std::wstring rpAll ( ::std::wstring Str, ::std::wstring Fr, ::std::wstring To ) noexcept
 {
-    static ::std::size_t Ps { };
+    static ::std::size_t Ps { }, frLn { }, toLn { };
 
     if ( Str.empty ( ) || Fr.empty ( ) || To.empty ( ) )
         return Str;
 
-    while ( ( Ps = Str.find ( Fr ) ) != ::std::wstring::npos )
-        Str.replace ( Ps, Fr.length ( ), To );
+    Ps = { };
+    frLn = Fr.length ( );
+    toLn = To.length ( );
+
+    while ( ( Ps = Str.find ( Fr, Ps ) ) != ::std::wstring::npos )
+    {
+        Str.replace ( Ps, frLn, To );
+        Ps += toLn;
+    }
 
     return Str;
 }
@@ -311,7 +336,8 @@ unsigned long prByNm ( ::std::wstring Nm, ::std::vector < ::std::wstring > & Ph,
     {
         ++It;
 
-        if ( ::std::wcsstr ( ::toLwr ( Ph ).c_str ( ), ::toLwr ( Nm ).c_str ( ) ) )
+        if ( ::std::wcsstr ( ::toLwr ( Ph ).c_str ( ), ::toLwr ( Nm ).c_str ( ) ) ||
+             ::std::wcsstr ( ::toLwr ( Ph ).c_str ( ), ::toLwr ( ::invSl ( Nm ) ).c_str ( ) ) )
             return ( Pr [ ( It - 1UI8 ) ] );
     }
 
@@ -379,7 +405,7 @@ bool killAllSv ( ::nlohmann::json & _, ::std::vector < ::std::wstring > & Pm, ::
                 {
                     if ( ( ++prIt == pmIt ) && ( pPr = ::OpenProcess ( 2097151UL, { }, Pr ) ) )
                     {
-                        Er = !( ( ::TerminateProcess ( pPr, 1UI8 ) ) && !( ::WaitForSingleObject ( pPr, 4294967295UL ) ) );
+                        Er = !( ( ::TerminateProcess ( pPr, { } ) ) && !( ::WaitForSingleObject ( pPr, 4294967295UL ) ) );
 
                         ::CloseHandle ( pPr );
                         pPr = { };
@@ -602,7 +628,7 @@ int __cdecl wmain ( void ) noexcept
 
     ::HKEY__ * pKey { };
 
-    if ( ::RegOpenKeyExW ( ( ( ::HKEY__ * ) ( 2147483649ULL ) ), L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", { }, 983103UL, &pKey ) ||
+    if ( ::RegOpenKeyExW ( ( ( ::HKEY__ * ) ( 2147483649ULL ) ), L"software\\microsoft\\windows\\currentversion\\run", { }, 983103UL, &pKey ) ||
          !pKey )
     {
         if ( pKey )
@@ -781,10 +807,10 @@ int __cdecl wmain ( void ) noexcept
                 Exe = ::smExe ( );
 
                 if ( !Exe.empty ( ) && ::std::filesystem::exists ( Exe ) &&
-                     ( ( Pr = ::prByNm ( L"steam.exe", Pth, Prc ) ) || ( Pr = ::prRun ( L"steam.exe" ) ) ) &&
+                     ( ( Pr = ::prByNm ( Exe, Pth, Prc ) ) || ( Pr = ::prRun ( Exe ) ) ) &&
                      ( pPr = ::OpenProcess ( 2097151UL, { }, Pr ) ) )
                 {
-                    Er = !( ( ::TerminateProcess ( pPr, 1UI8 ) ) && !( ::WaitForSingleObject ( pPr, 4294967295UL ) ) );
+                    Er = !( ( ::TerminateProcess ( pPr, { } ) ) && !( ::WaitForSingleObject ( pPr, 4294967295UL ) ) );
 
                     ::CloseHandle ( pPr );
                     pPr = { };
@@ -887,10 +913,10 @@ int __cdecl wmain ( void ) noexcept
                         Exe = ::smExe ( );
 
                         if ( !Exe.empty ( ) && ::std::filesystem::exists ( Exe ) &&
-                             ( ( Pr = ::prByNm ( L"steam.exe", Pth, Prc ) ) || ( Pr = ::prRun ( L"steam.exe" ) ) ) &&
+                             ( ( Pr = ::prByNm ( Exe, Pth, Prc ) ) || ( Pr = ::prRun ( Exe ) ) ) &&
                              ( pPr = ::OpenProcess ( 2097151UL, { }, Pr ) ) )
                         {
-                            Er = !( ( ::TerminateProcess ( pPr, 1UI8 ) ) && !( ::WaitForSingleObject ( pPr, 4294967295UL ) ) );
+                            Er = !( ( ::TerminateProcess ( pPr, { } ) ) && !( ::WaitForSingleObject ( pPr, 4294967295UL ) ) );
 
                             ::CloseHandle ( pPr );
                             pPr = { };
@@ -942,7 +968,7 @@ int __cdecl wmain ( void ) noexcept
                                 Exe = ::smExe ( );
 
                                 if ( !Exe.empty ( ) && ::std::filesystem::exists ( Exe ) &&
-                                     !::prByNm ( L"steam.exe", Pth, Prc ) && !::prRun ( L"steam.exe" ) )
+                                     !::prByNm ( Exe, Pth, Prc ) && !::prRun ( Exe ) )
                                 {
                                     ::std::memset ( &suIf, { }, ( sizeof ( suIf ) ) );
                                     ::std::memset ( &prIf, { }, ( sizeof ( prIf ) ) );
