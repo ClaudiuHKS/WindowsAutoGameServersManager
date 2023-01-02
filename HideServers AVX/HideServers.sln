@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33209.295
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{DDCFCFB8-6670-9760-8711-03A5C71BC942}") = "HideServers", "HideServers.vcxproj", "{ABFAFFE0-9AFC-4CAF-ABC9-B97E44D37506}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{ABFAFFE0-9AFC-4CAF-ABC9-B97E44D37506}.Release|x64.ActiveCfg = Release|x64
+		{ABFAFFE0-9AFC-4CAF-ABC9-B97E44D37506}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {1139D532-C2B0-4EDC-B560-5BCA43EBB396}
+	EndGlobalSection
+EndGlobal
