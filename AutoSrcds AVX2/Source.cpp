@@ -738,6 +738,98 @@ int __cdecl wmain(void) noexcept
             ::RegSetValueExW(pKey, L"AutoSrcds_9", { }, 1UL, ((unsigned char*)(Str)),
                 ((sizeof(decltype (*Str))) * (((unsigned long)(::std::wcslen(Str))) + 1UL)));
 
+        else if (::std::filesystem::exists(Ph + L"10"))
+            ::RegSetValueExW(pKey, L"AutoSrcds_10", { }, 1UL, ((unsigned char*)(Str)),
+                ((sizeof(decltype (*Str))) * (((unsigned long)(::std::wcslen(Str))) + 1UL)));
+
+        else if (::std::filesystem::exists(Ph + L"11"))
+            ::RegSetValueExW(pKey, L"AutoSrcds_11", { }, 1UL, ((unsigned char*)(Str)),
+                ((sizeof(decltype (*Str))) * (((unsigned long)(::std::wcslen(Str))) + 1UL)));
+
+        else if (::std::filesystem::exists(Ph + L"12"))
+            ::RegSetValueExW(pKey, L"AutoSrcds_12", { }, 1UL, ((unsigned char*)(Str)),
+                ((sizeof(decltype (*Str))) * (((unsigned long)(::std::wcslen(Str))) + 1UL)));
+
+        else if (::std::filesystem::exists(Ph + L"13"))
+            ::RegSetValueExW(pKey, L"AutoSrcds_13", { }, 1UL, ((unsigned char*)(Str)),
+                ((sizeof(decltype (*Str))) * (((unsigned long)(::std::wcslen(Str))) + 1UL)));
+
+        else if (::std::filesystem::exists(Ph + L"14"))
+            ::RegSetValueExW(pKey, L"AutoSrcds_14", { }, 1UL, ((unsigned char*)(Str)),
+                ((sizeof(decltype (*Str))) * (((unsigned long)(::std::wcslen(Str))) + 1UL)));
+
+        else if (::std::filesystem::exists(Ph + L"15"))
+            ::RegSetValueExW(pKey, L"AutoSrcds_15", { }, 1UL, ((unsigned char*)(Str)),
+                ((sizeof(decltype (*Str))) * (((unsigned long)(::std::wcslen(Str))) + 1UL)));
+
+        else if (::std::filesystem::exists(Ph + L"16"))
+            ::RegSetValueExW(pKey, L"AutoSrcds_16", { }, 1UL, ((unsigned char*)(Str)),
+                ((sizeof(decltype (*Str))) * (((unsigned long)(::std::wcslen(Str))) + 1UL)));
+
+        else if (::std::filesystem::exists(Ph + L"17"))
+            ::RegSetValueExW(pKey, L"AutoSrcds_17", { }, 1UL, ((unsigned char*)(Str)),
+                ((sizeof(decltype (*Str))) * (((unsigned long)(::std::wcslen(Str))) + 1UL)));
+
+        else if (::std::filesystem::exists(Ph + L"18"))
+            ::RegSetValueExW(pKey, L"AutoSrcds_18", { }, 1UL, ((unsigned char*)(Str)),
+                ((sizeof(decltype (*Str))) * (((unsigned long)(::std::wcslen(Str))) + 1UL)));
+
+        else if (::std::filesystem::exists(Ph + L"19"))
+            ::RegSetValueExW(pKey, L"AutoSrcds_19", { }, 1UL, ((unsigned char*)(Str)),
+                ((sizeof(decltype (*Str))) * (((unsigned long)(::std::wcslen(Str))) + 1UL)));
+
+        else if (::std::filesystem::exists(Ph + L"20"))
+            ::RegSetValueExW(pKey, L"AutoSrcds_20", { }, 1UL, ((unsigned char*)(Str)),
+                ((sizeof(decltype (*Str))) * (((unsigned long)(::std::wcslen(Str))) + 1UL)));
+
+        else if (::std::filesystem::exists(Ph + L"21"))
+            ::RegSetValueExW(pKey, L"AutoSrcds_21", { }, 1UL, ((unsigned char*)(Str)),
+                ((sizeof(decltype (*Str))) * (((unsigned long)(::std::wcslen(Str))) + 1UL)));
+
+        else if (::std::filesystem::exists(Ph + L"22"))
+            ::RegSetValueExW(pKey, L"AutoSrcds_22", { }, 1UL, ((unsigned char*)(Str)),
+                ((sizeof(decltype (*Str))) * (((unsigned long)(::std::wcslen(Str))) + 1UL)));
+
+        else if (::std::filesystem::exists(Ph + L"23"))
+            ::RegSetValueExW(pKey, L"AutoSrcds_23", { }, 1UL, ((unsigned char*)(Str)),
+                ((sizeof(decltype (*Str))) * (((unsigned long)(::std::wcslen(Str))) + 1UL)));
+
+        else if (::std::filesystem::exists(Ph + L"24"))
+            ::RegSetValueExW(pKey, L"AutoSrcds_24", { }, 1UL, ((unsigned char*)(Str)),
+                ((sizeof(decltype (*Str))) * (((unsigned long)(::std::wcslen(Str))) + 1UL)));
+
+        else if (::std::filesystem::exists(Ph + L"25"))
+            ::RegSetValueExW(pKey, L"AutoSrcds_25", { }, 1UL, ((unsigned char*)(Str)),
+                ((sizeof(decltype (*Str))) * (((unsigned long)(::std::wcslen(Str))) + 1UL)));
+
+        else if (::std::filesystem::exists(Ph + L"26"))
+            ::RegSetValueExW(pKey, L"AutoSrcds_26", { }, 1UL, ((unsigned char*)(Str)),
+                ((sizeof(decltype (*Str))) * (((unsigned long)(::std::wcslen(Str))) + 1UL)));
+
+        else if (::std::filesystem::exists(Ph + L"27"))
+            ::RegSetValueExW(pKey, L"AutoSrcds_27", { }, 1UL, ((unsigned char*)(Str)),
+                ((sizeof(decltype (*Str))) * (((unsigned long)(::std::wcslen(Str))) + 1UL)));
+
+        else if (::std::filesystem::exists(Ph + L"28"))
+            ::RegSetValueExW(pKey, L"AutoSrcds_28", { }, 1UL, ((unsigned char*)(Str)),
+                ((sizeof(decltype (*Str))) * (((unsigned long)(::std::wcslen(Str))) + 1UL)));
+
+        else if (::std::filesystem::exists(Ph + L"29"))
+            ::RegSetValueExW(pKey, L"AutoSrcds_29", { }, 1UL, ((unsigned char*)(Str)),
+                ((sizeof(decltype (*Str))) * (((unsigned long)(::std::wcslen(Str))) + 1UL)));
+
+        else if (::std::filesystem::exists(Ph + L"30"))
+            ::RegSetValueExW(pKey, L"AutoSrcds_30", { }, 1UL, ((unsigned char*)(Str)),
+                ((sizeof(decltype (*Str))) * (((unsigned long)(::std::wcslen(Str))) + 1UL)));
+
+        else if (::std::filesystem::exists(Ph + L"31"))
+            ::RegSetValueExW(pKey, L"AutoSrcds_31", { }, 1UL, ((unsigned char*)(Str)),
+                ((sizeof(decltype (*Str))) * (((unsigned long)(::std::wcslen(Str))) + 1UL)));
+
+        else if (::std::filesystem::exists(Ph + L"32"))
+            ::RegSetValueExW(pKey, L"AutoSrcds_32", { }, 1UL, ((unsigned char*)(Str)),
+                ((sizeof(decltype (*Str))) * (((unsigned long)(::std::wcslen(Str))) + 1UL)));
+
         else
             ::RegSetValueExW(pKey, L"AutoSrcds", { }, 1UL, ((unsigned char*)(Str)),
                 ((sizeof(decltype (*Str))) * (((unsigned long)(::std::wcslen(Str))) + 1UL)));
