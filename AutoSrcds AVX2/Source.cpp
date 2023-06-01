@@ -7,6 +7,7 @@
 #include < winsock2.h >
 #include < psapi.h >
 #include < wbemidl.h >
+#include < mstask.h >
 
 class qryPrData
 {
@@ -446,11 +447,19 @@ bool killAllSv(::nlohmann::json& _, ::std::vector < ::std::wstring >& Pm, ::std:
     static ::timeval Tv{ };
     static ::hostent* pHe{ };
     static ::sockaddr_in Sa{ };
+    static ::WSAData _{ };
+
+    ::WSACleanup();
+    {
+        _ = { };
+    }
 
     Dv.clear();
-    Dv = { };
+    {
+        Dv = { };
+    }
 
-    if (!(pHe = ::gethostbyname(Sv.c_str())))
+    if (::WSAStartup(514UI16, &_) || !(pHe = ::gethostbyname(Sv.c_str())))
         return Dv;
 
     Sk = ::socket(2I8, 1I8, 6I8);
@@ -589,6 +598,42 @@ bool ndUp(::nlohmann::json& _) noexcept
         return { };
 
     return ((bool)(!(::std::strstr(((char*)(Var.data())), "\"up_to_date\":true"))));
+}
+
+bool rnTk(::std::wstring Tk) noexcept
+{
+    static ::std::wstring Cd{ };
+
+    static ::_iobuf* pPp{ };
+
+    static wchar_t Ln[1024I16]{ };
+
+    Cd = L"SchTasks /Run /TN " + Tk;
+
+    pPp = ::_wpopen(Cd.c_str(), L"r");
+
+    Cd.clear();
+
+    if (!pPp)
+    {
+        return { };
+    }
+
+    while (!::std::feof(pPp))
+    {
+        if (::std::fgetws(Ln, (((sizeof(Ln)) / (sizeof(decltype (*Ln)))) - 1I8), pPp))
+        {
+            Cd += Ln;
+
+            continue;
+        }
+
+        break;
+    }
+
+    ::_pclose(pPp);
+
+    return ((bool)(::std::wcsstr(::toLwr(Cd).c_str(), L"success")));
 }
 
 int __cdecl wmain(void) noexcept
@@ -921,9 +966,7 @@ int __cdecl wmain(void) noexcept
                     {
                         Exe = ::smExe();
 
-                        if (!Exe.empty() && ::std::filesystem::exists(Exe) &&
-                            ((Pr = ::prByNm(Exe, Pth, Prc)) || (Pr = ::prRun(Exe))) &&
-                            (pPr = ::OpenProcess(2097151UL, { }, Pr)))
+                        if (!Exe.empty() && ::std::filesystem::exists(Exe) && ((Pr = ::prByNm(Exe, Pth, Prc)) || (Pr = ::prRun(Exe))) && (pPr = ::OpenProcess(2097151UL, { }, Pr)))
                         {
                             Er = !((::TerminateProcess(pPr, { })) && !(::WaitForSingleObject(pPr, 4294967295UL)));
 
@@ -953,20 +996,37 @@ int __cdecl wmain(void) noexcept
 
                         suIf.cb = (sizeof(suIf));
 
-                        if (::CreateProcessW(::toUc(Sv["Path"].get < ::std::string >()).c_str(),
-                            ((wchar_t*)((L"\"" + ::toUc(Sv["Path"].get < ::std::string >()) + L"\" " +
-                                ::toUc(Sv["Args"].get < ::std::string >())).c_str())),
-                            { }, { }, { }, 144UL, { }, ::tcPh(::toUc(Sv["Path"].get < ::std::string >())).c_str(),
-                            &suIf, &prIf) && prIf.hProcess)
+                        if (::rnTk(Prt) || (::CreateProcessW(::toUc(Sv["Path"].get < ::std::string >()).c_str(),
+                            ((wchar_t*)((L"\"" + ::toUc(Sv["Path"].get < ::std::string >()) + L"\" " + ::toUc(Sv["Args"].get < ::std::string >())).c_str())),
+                            { }, { }, { }, 144UL, { }, ::tcPh(::toUc(Sv["Path"].get < ::std::string >())).c_str(), &suIf, &prIf) && prIf.hProcess))
                         {
-                            ::CloseHandle(prIf.hProcess);
-                            prIf.hProcess = { };
+                            if (prIf.hProcess)
+                            {
+                                ::CloseHandle(prIf.hProcess);
+                                {
+                                    prIf.hProcess = { };
+                                }
+                            }
 
-                            ::CloseHandle(prIf.hThread);
-                            prIf.hThread = { };
+                            if (prIf.hThread)
+                            {
+                                ::CloseHandle(prIf.hThread);
+                                {
+                                    prIf.hThread = { };
+                                }
+                            }
 
                             ::std::time(&Tm);
-                            ::std::wcout << ::toUc(::std::ctime(&Tm)) << L"Launched " << Prt << L" (" << prIf.dwProcessId << L")" << ::std::endl << ::std::endl;
+
+                            if (prIf.dwProcessId > 0UL)
+                            {
+                                ::std::wcout << ::toUc(::std::ctime(&Tm)) << L"Launched " << Prt << L" (" << prIf.dwProcessId << L")" << ::std::endl << ::std::endl;
+                            }
+
+                            else
+                            {
+                                ::std::wcout << ::toUc(::std::ctime(&Tm)) << L"Launched " << Prt << L" (Task Scheduler)" << ::std::endl << ::std::endl;
+                            }
 
                             ::Sleep((!Cfg["Skip"].is_discarded() && !Cfg["Skip"].empty() && Cfg["Skip"].is_number_unsigned()) ?
                                 (::std::max(Cfg["Skip"].get < unsigned long >(), 5000UL)) : (10000UL));
@@ -976,18 +1036,15 @@ int __cdecl wmain(void) noexcept
                             {
                                 Exe = ::smExe();
 
-                                if (!Exe.empty() && ::std::filesystem::exists(Exe) &&
-                                    !::prByNm(Exe, Pth, Prc) && !::prRun(Exe))
+                                if (!Exe.empty() && ::std::filesystem::exists(Exe) && !::prByNm(Exe, Pth, Prc) && !::prRun(Exe))
                                 {
                                     ::std::memset(&suIf, { }, (sizeof(suIf)));
                                     ::std::memset(&prIf, { }, (sizeof(prIf)));
 
                                     suIf.cb = (sizeof(suIf));
 
-                                    if (::CreateProcessW(Exe.c_str(),
-                                        ((wchar_t*)((L"\"" + Exe + L"\" /high -high +high").c_str())),
-                                        { }, { }, { }, 144UL, { }, ::tcPh(Exe).c_str(),
-                                        &suIf, &prIf) && prIf.hProcess)
+                                    if (::CreateProcessW(Exe.c_str(), ((wchar_t*)((L"\"" + Exe + L"\" /high -high +high").c_str())),
+                                        { }, { }, { }, 144UL, { }, ::tcPh(Exe).c_str(), &suIf, &prIf) && prIf.hProcess)
                                     {
                                         ::CloseHandle(prIf.hProcess);
                                         prIf.hProcess = { };
